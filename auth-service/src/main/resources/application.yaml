@@ -19,7 +19,7 @@ spring:
       maximum-pool-size: 2
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
     hibernate:
       ddl-auto: ${DDL_AUTO:update}
     show-sql: ${SHOW_SQL:true}
@@ -27,3 +27,8 @@ spring:
       hibernate:
         default_schema: autenticacion
         format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  # 24 horas en milisegundos
+  expiracion: 86400000
