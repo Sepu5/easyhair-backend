@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import com.easyhair.auth.dto.ActualizarUsuarioRequest;
 
 import com.easyhair.auth.dto.AuthResponse;
 import com.easyhair.auth.dto.LoginRequest;
@@ -41,5 +43,10 @@ public class AuthController {
     @GetMapping("/usuarios/{id}")
     public UsuarioResponse obtenerPorId(@PathVariable Long id) {
         return usuarioService.obtenerPorId(id);
+    }
+
+        @PutMapping("/usuarios/{id}")
+    public UsuarioResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarUsuarioRequest request) {
+        return usuarioService.actualizar(id, request);
     }
 }

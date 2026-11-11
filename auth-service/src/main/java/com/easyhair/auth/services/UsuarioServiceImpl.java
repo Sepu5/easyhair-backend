@@ -11,6 +11,7 @@ import com.easyhair.auth.dto.RegistroRequest;
 import com.easyhair.auth.dto.UsuarioResponse;
 import com.easyhair.auth.entities.Usuario;
 import com.easyhair.auth.repository.UsuarioRepository;
+import com.easyhair.auth.dto.ActualizarUsuarioRequest;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -61,6 +62,32 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepo.findById(id)
                 .map(this::aResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    }
+
+        @Override
+    public UsuarioResponse actualizar(Long id, ActualizarUsuarioRequest request) {
+        Usuario usuario = usuarioRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        String correo = request.getCorreo().trim().toLowerCase();
+
+        // si cambia el correo, revisar que no lo tenga otro usuario
+        if (!correo.equals(usuario.getCorreo()) && usuarioRepo.existsByCorreo(correo)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ese correo ya está en uso");
+        }
+
+        usuario.setNombre(request.getNombre().trim());
+        usuario.setCorreo(correo);
+
+        String password = request.getPassword();
+        if (password != null && !password.isBlank()) {
+            if (password.length() < 6) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 6 caracteres");
+            }
+            usuario.setPassword(encoder.encode(password));
+        }
+
+        return aResponse(usuarioRepo.save(usuario));
     }
 
     // los correos @easyhair.cl son del staff
