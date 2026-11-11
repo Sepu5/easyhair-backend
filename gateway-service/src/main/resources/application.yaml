@@ -1,0 +1,46 @@
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: gateway-service
+  # lee las variables del .env que está en la raíz del repo
+  config:
+    import: optional:file:../.env[.properties]
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # permite que la web admin (otro dominio) llame al gateway
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOriginPatterns: "*"
+                allowedMethods: "*"
+                allowedHeaders: "*"
+          routes:
+            - id: auth-service
+              uri: ${AUTH_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**,/api/usuarios/**
+            - id: catalogo-service
+              uri: ${CATALOGO_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/servicios/**,/api/peluqueros/**
+            - id: reservas-service
+              uri: ${RESERVAS_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/reservas/**,/api/bloqueos/**
+            - id: inventario-service
+              uri: ${INVENTARIO_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/materiales/**,/api/consumos/**,/api/compras/**
+            - id: finanzas-service
+              uri: ${FINANZAS_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/movimientos/**
+
+# la misma clave que usa auth-service para firmar el token
+jwt:
+  secret: ${JWT_SECRET}
