@@ -1,0 +1,15 @@
+# Compilados de Maven
+target/
+
+# Credenciales (nunca a GitHub)
+.env
+*.pem
+
+# Configuración de los editores
+.vscode/
+.idea/
+*.iml
+
+# Sistema
+.DS_Store
+Thumbs.db
