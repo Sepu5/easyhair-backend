@@ -19,7 +19,7 @@ public interface ReservaService {
 
     List<Reserva> reservasDeUsuario(Long usuarioId);
 
-    Reserva cancelar(Long id);
+    Reserva cancelar(Long id, String motivo, String rol);
 
     Reserva reprogramar(Long id, ReprogramarRequest request);
 

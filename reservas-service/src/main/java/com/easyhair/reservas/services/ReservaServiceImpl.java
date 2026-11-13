@@ -110,11 +110,24 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public Reserva cancelar(Long id) {
+    public Reserva cancelar(Long id, String motivo, String rol) {
         Reserva reserva = obtenerPorId(id);
         validarPendiente(reserva);
+        validarMotivoCancelacion(rol, motivo);
+
         reserva.setEstado("CANCELADA");
+        reserva.setCanceladaPor("STAFF".equals(rol) ? "STAFF" : "CLIENTE");
+        if (motivo != null && !motivo.isBlank()) {
+            reserva.setMotivoCancelacion(motivo.trim());
+        }
         return reservaRepo.save(reserva);
+    }
+
+    // si cancela la peluquería, el cliente tiene que saber por qué
+    public void validarMotivoCancelacion(String rol, String motivo) {
+        if ("STAFF".equals(rol) && (motivo == null || motivo.isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el motivo de la cancelación");
+        }
     }
 
     @Override
