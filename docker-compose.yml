@@ -1,0 +1,73 @@
+# EasyHair: un contenedor por microservicio.
+# La base de datos está en Supabase, por eso no hay contenedor de Postgres.
+# Levantar todo:  docker compose up -d --build
+# Ver estado:     docker compose ps
+# Ver logs:       docker compose logs -f reservas-service
+# Apagar todo:    docker compose down
+
+x-comun: &comun
+  env_file: .env
+  restart: unless-stopped
+  environment: &entorno
+    # limita la memoria de cada Java para que entren todos en el servidor
+    JAVA_TOOL_OPTIONS: "-Xmx256m"
+
+services:
+  auth-service:
+    <<: *comun
+    build: ./auth-service
+    container_name: auth-service
+
+  catalogo-service:
+    <<: *comun
+    build: ./catalogo-service
+    container_name: catalogo-service
+
+  finanzas-service:
+    <<: *comun
+    build: ./finanzas-service
+    container_name: finanzas-service
+
+  reservas-service:
+    <<: *comun
+    build: ./reservas-service
+    container_name: reservas-service
+    environment:
+      <<: *entorno
+      # dentro de Docker cada servicio se llama por el nombre de su contenedor
+      CATALOGO_URL: http://catalogo-service:8082
+      FINANZAS_URL: http://finanzas-service:8085
+    depends_on:
+      - catalogo-service
+      - finanzas-service
+
+  inventario-service:
+    <<: *comun
+    build: ./inventario-service
+    container_name: inventario-service
+    environment:
+      <<: *entorno
+      FINANZAS_URL: http://finanzas-service:8085
+    depends_on:
+      - finanzas-service
+
+  gateway-service:
+    <<: *comun
+    build: ./gateway-service
+    container_name: gateway-service
+    environment:
+      <<: *entorno
+      AUTH_URL: http://auth-service:8081
+      CATALOGO_URL: http://catalogo-service:8082
+      RESERVAS_URL: http://reservas-service:8083
+      INVENTARIO_URL: http://inventario-service:8084
+      FINANZAS_URL: http://finanzas-service:8085
+    # el único puerto abierto hacia afuera: el 80 (el normal de la web)
+    ports:
+      - "80:8080"
+    depends_on:
+      - auth-service
+      - catalogo-service
+      - reservas-service
+      - inventario-service
+      - finanzas-service
