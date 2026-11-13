@@ -24,6 +24,16 @@ public class GatewayTest {
     }
 
     @Test
+    public void laDocumentacionSwaggerEsPublica() {
+        assertTrue(filtro.esPublica("/swagger-ui.html", HttpMethod.GET));
+        assertTrue(filtro.esPublica("/docs/reservas/v3/api-docs", HttpMethod.GET));
+        // pero la ruta /docs no deja pasar a la API sin token
+        assertFalse(filtro.esPublica("/docs/reservas/api/reservas/usuario/1", HttpMethod.GET));
+        assertFalse(filtro.esPublica("/docs/reservas/v3/api-docs/../../api/reservas/usuario/1", HttpMethod.GET));
+        assertFalse(filtro.esPublica("/api/reservas/usuario/1", HttpMethod.GET));
+    }
+
+    @Test
     public void modificarElCatalogoNecesitaToken() {
         assertFalse(filtro.esPublica("/api/servicios", HttpMethod.POST));
         assertFalse(filtro.esPublica("/api/peluqueros/1", HttpMethod.PUT));

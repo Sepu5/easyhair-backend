@@ -69,6 +69,16 @@ public class JwtFiltro implements GlobalFilter, Ordered {
         if (HttpMethod.OPTIONS.equals(metodo)) {
             return true;
         }
+        // rutas con ".." nunca son públicas (evita saltarse el token con /docs/../api)
+        if (ruta.contains("..")) {
+            return false;
+        }
+        // la documentación de Swagger se puede ver sin iniciar sesión
+        if (ruta.startsWith("/swagger-ui") || ruta.startsWith("/v3/api-docs")
+                || ruta.startsWith("/webjars")
+                || (ruta.startsWith("/docs/") && ruta.contains("/v3/api-docs"))) {
+            return true;
+        }
         boolean esCatalogo = ruta.startsWith("/api/servicios") || ruta.startsWith("/api/peluqueros");
         return esCatalogo && HttpMethod.GET.equals(metodo);
     }

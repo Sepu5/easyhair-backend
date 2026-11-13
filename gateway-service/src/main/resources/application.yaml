@@ -40,7 +40,58 @@ spring:
               uri: ${FINANZAS_URL:http://localhost:8085}
               predicates:
                 - Path=/api/movimientos/**
+            # solo la documentación de auth-service: /docs/auth/v3/api-docs -> /v3/api-docs
+            - id: docs-auth
+              uri: ${AUTH_URL:http://localhost:8081}
+              predicates:
+                - Path=/docs/auth/v3/api-docs/**
+              filters:
+                - RewritePath=/docs/auth/v3/api-docs(?<resto>.*), /v3/api-docs${resto}
+            # solo la documentación de catalogo-service: /docs/catalogo/v3/api-docs -> /v3/api-docs
+            - id: docs-catalogo
+              uri: ${CATALOGO_URL:http://localhost:8082}
+              predicates:
+                - Path=/docs/catalogo/v3/api-docs/**
+              filters:
+                - RewritePath=/docs/catalogo/v3/api-docs(?<resto>.*), /v3/api-docs${resto}
+            # solo la documentación de reservas-service: /docs/reservas/v3/api-docs -> /v3/api-docs
+            - id: docs-reservas
+              uri: ${RESERVAS_URL:http://localhost:8083}
+              predicates:
+                - Path=/docs/reservas/v3/api-docs/**
+              filters:
+                - RewritePath=/docs/reservas/v3/api-docs(?<resto>.*), /v3/api-docs${resto}
+            # solo la documentación de inventario-service: /docs/inventario/v3/api-docs -> /v3/api-docs
+            - id: docs-inventario
+              uri: ${INVENTARIO_URL:http://localhost:8084}
+              predicates:
+                - Path=/docs/inventario/v3/api-docs/**
+              filters:
+                - RewritePath=/docs/inventario/v3/api-docs(?<resto>.*), /v3/api-docs${resto}
+            # solo la documentación de finanzas-service: /docs/finanzas/v3/api-docs -> /v3/api-docs
+            - id: docs-finanzas
+              uri: ${FINANZAS_URL:http://localhost:8085}
+              predicates:
+                - Path=/docs/finanzas/v3/api-docs/**
+              filters:
+                - RewritePath=/docs/finanzas/v3/api-docs(?<resto>.*), /v3/api-docs${resto}
 
 # la misma clave que usa auth-service para firmar el token
 jwt:
   secret: ${JWT_SECRET}
+
+# Swagger en http://<IP>/swagger-ui.html con un selector por microservicio
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /docs/auth/v3/api-docs
+      - name: catalogo-service
+        url: /docs/catalogo/v3/api-docs
+      - name: reservas-service
+        url: /docs/reservas/v3/api-docs
+      - name: inventario-service
+        url: /docs/inventario/v3/api-docs
+      - name: finanzas-service
+        url: /docs/finanzas/v3/api-docs
