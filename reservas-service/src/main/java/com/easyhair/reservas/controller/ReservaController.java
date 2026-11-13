@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.easyhair.reservas.dto.CancelarRequest;
 import com.easyhair.reservas.dto.CrearReservaRequest;
 import com.easyhair.reservas.dto.DisponibilidadResponse;
 import com.easyhair.reservas.dto.ReprogramarRequest;
@@ -56,9 +58,13 @@ public class ReservaController {
         return reservaService.reservasDeUsuario(usuarioId);
     }
 
+    // la puede cancelar el cliente o el staff; el gateway manda el rol en X-Usuario-Rol
     @PutMapping("/{id}/cancelar")
-    public Reserva cancelar(@PathVariable Long id) {
-        return reservaService.cancelar(id);
+    public Reserva cancelar(@PathVariable Long id,
+            @RequestBody(required = false) CancelarRequest request,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        String motivo = request != null ? request.getMotivo() : null;
+        return reservaService.cancelar(id, motivo, rol);
     }
 
     @PutMapping("/{id}/reprogramar")

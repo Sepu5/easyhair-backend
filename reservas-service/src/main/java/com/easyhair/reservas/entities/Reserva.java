@@ -48,6 +48,10 @@ public class Reserva {
     @Column(nullable = false)
     private String estado;
 
+    // solo si se cancela: quién la canceló (CLIENTE o STAFF) y por qué
+    private String canceladaPor;
+    private String motivoCancelacion;
+
     private LocalDateTime fechaCreacion;
 
     public Reserva() {

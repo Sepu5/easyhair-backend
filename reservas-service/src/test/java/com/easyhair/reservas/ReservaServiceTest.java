@@ -71,4 +71,15 @@ public class ReservaServiceTest {
         LocalDate manana = LocalDate.now().plusDays(1);
         assertDoesNotThrow(() -> service.validarFechaYHora(manana, "10:00"));
     }
+
+    @Test
+    public void staffNoPuedeCancelarSinMotivo() {
+        assertThrows(ResponseStatusException.class, () -> service.validarMotivoCancelacion("STAFF", " "));
+    }
+
+    @Test
+    public void clientePuedeCancelarSinMotivo() {
+        assertDoesNotThrow(() -> service.validarMotivoCancelacion("CLIENTE", null));
+        assertDoesNotThrow(() -> service.validarMotivoCancelacion("STAFF", "Me enfermé"));
+    }
 }
