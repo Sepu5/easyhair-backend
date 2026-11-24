@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.easyhair.catalogo.entities.Peluquero;
 import com.easyhair.catalogo.services.CatalogoService;
+import com.easyhair.catalogo.services.Permisos;
 
 import jakarta.validation.Valid;
 
@@ -46,12 +48,16 @@ public class PeluqueroController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Peluquero crear(@Valid @RequestBody Peluquero peluquero) {
+    public Peluquero crear(@Valid @RequestBody Peluquero peluquero,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloAdmin(rol);
         return catalogoService.crearPeluquero(peluquero);
     }
 
     @PutMapping("/{id}")
-    public Peluquero actualizar(@PathVariable Long id, @Valid @RequestBody Peluquero peluquero) {
+    public Peluquero actualizar(@PathVariable Long id, @Valid @RequestBody Peluquero peluquero,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloAdmin(rol);
         return catalogoService.actualizarPeluquero(id, peluquero);
     }
 }

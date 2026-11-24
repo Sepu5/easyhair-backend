@@ -22,6 +22,7 @@ import com.easyhair.reservas.dto.DisponibilidadResponse;
 import com.easyhair.reservas.dto.ReprogramarRequest;
 import com.easyhair.reservas.entities.Reserva;
 import com.easyhair.reservas.services.ReservaService;
+import com.easyhair.reservas.services.Permisos;
 
 import jakarta.validation.Valid;
 
@@ -73,24 +74,31 @@ public class ReservaController {
     }
 
     @GetMapping("/agenda")
-    public List<Reserva> agenda(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam Long peluqueroId) {
+    public List<Reserva> agenda(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam Long peluqueroId,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.agenda(fecha, peluqueroId);
     }
 
     @PutMapping("/{id}/atender")
-    public Reserva atender(@PathVariable Long id) {
+    public Reserva atender(@PathVariable Long id,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.atender(id);
     }
 
     @PutMapping("/{id}/no-asistio")
-    public Reserva marcarNoAsistio(@PathVariable Long id) {
+    public Reserva marcarNoAsistio(@PathVariable Long id,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.marcarNoAsistio(id);
     }
 
     @GetMapping("/peluquero/{peluqueroId}/atendidas")
-    public List<Reserva> atendidasDePeluquero(@PathVariable Long peluqueroId) {
+    public List<Reserva> atendidasDePeluquero(@PathVariable Long peluqueroId,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.atendidasDePeluquero(peluqueroId);
     }
 }

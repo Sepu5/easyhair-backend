@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.easyhair.reservas.entities.Bloqueo;
 import com.easyhair.reservas.services.ReservaService;
+import com.easyhair.reservas.services.Permisos;
 
 @RestController
 @RequestMapping("api/bloqueos")
@@ -29,21 +31,26 @@ public class BloqueoController {
     }
 
     @GetMapping
-    public List<Bloqueo> listar(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam Long peluqueroId) {
+    public List<Bloqueo> listar(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam Long peluqueroId,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.bloqueos(fecha, peluqueroId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Bloqueo crear(@RequestBody Bloqueo bloqueo) {
+    public Bloqueo crear(@RequestBody Bloqueo bloqueo,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         return reservaService.crearBloqueo(bloqueo);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Long id,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloPeluqueria(rol);
         reservaService.eliminarBloqueo(id);
     }
 }

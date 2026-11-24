@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.easyhair.catalogo.entities.Servicio;
 import com.easyhair.catalogo.services.CatalogoService;
+import com.easyhair.catalogo.services.Permisos;
 
 import jakarta.validation.Valid;
 
@@ -40,18 +42,24 @@ public class ServicioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Servicio crear(@Valid @RequestBody Servicio servicio) {
+    public Servicio crear(@Valid @RequestBody Servicio servicio,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloAdmin(rol);
         return catalogoService.crearServicio(servicio);
     }
 
     @PutMapping("/{id}")
-    public Servicio actualizar(@PathVariable Long id, @Valid @RequestBody Servicio servicio) {
+    public Servicio actualizar(@PathVariable Long id, @Valid @RequestBody Servicio servicio,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloAdmin(rol);
         return catalogoService.actualizarServicio(id, servicio);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@PathVariable Long id,
+            @RequestHeader(value = "X-Usuario-Rol", required = false) String rol) {
+        Permisos.soloAdmin(rol);
         catalogoService.desactivarServicio(id);
     }
 }
