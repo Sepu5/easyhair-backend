@@ -27,7 +27,7 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
-    // CLIENTE o STAFF
+    // CLIENTE, STAFF o ADMIN (el ADMIN no se puede registrar solo, ver docs/supabase/01_rol_admin.sql)
     @Column(nullable = false)
     private String rol;
 

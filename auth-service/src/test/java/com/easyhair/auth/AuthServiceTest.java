@@ -41,6 +41,12 @@ public class AuthServiceTest {
     }
 
     @Test
+    public void elRegistroNuncaCreaUnAdmin() {
+        assertEquals("CLIENTE", service.asignarRol("admin@gmail.com"));
+        assertEquals("STAFF", service.asignarRol("admin@easyhair.cl"));
+    }
+
+    @Test
     public void tokenLlevaCorreoIdYRol() {
         JwtService jwtService = new JwtService(claveDePrueba, 3600000);
 

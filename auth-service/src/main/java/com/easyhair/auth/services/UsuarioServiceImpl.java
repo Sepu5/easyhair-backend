@@ -90,7 +90,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         return aResponse(usuarioRepo.save(usuario));
     }
 
-    // los correos @easyhair.cl son del staff
+    // los correos @easyhair.cl son del staff.
+    // Nunca devuelve ADMIN: así nadie puede registrarse como administrador desde la app
     @Override
     public String asignarRol(String correo) {
         if (correo.endsWith("@easyhair.cl")) {
