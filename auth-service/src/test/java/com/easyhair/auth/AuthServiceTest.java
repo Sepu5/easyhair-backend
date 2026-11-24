@@ -2,13 +2,17 @@ package com.easyhair.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.nio.charset.StandardCharsets;
 
 import javax.crypto.SecretKey;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.easyhair.auth.dto.RegistroRequest;
 import com.easyhair.auth.entities.Usuario;
@@ -95,5 +99,53 @@ public class AuthServiceTest {
         request.setCorreo(correo);
         request.setPassword(password);
         return request;
+    }
+
+    // ---------- administración de usuarios ----------
+
+    @Test
+    public void rolValidoSeDevuelveEnMayusculas() {
+        assertEquals("ADMIN", service.validarRol("admin"));
+        assertEquals("STAFF", service.validarRol(" STAFF "));
+    }
+
+    @Test
+    public void rolQueNoExisteEsError() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.validarRol("JEFE"));
+        assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+        assertThrows(ResponseStatusException.class, () -> service.validarRol(null));
+    }
+
+    @Test
+    public void soloElAdminPuedeAdministrarUsuarios() {
+        assertDoesNotThrow(() -> service.validarAdmin("ADMIN"));
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.validarAdmin("STAFF"));
+        assertEquals(HttpStatus.FORBIDDEN, e.getStatusCode());
+        assertThrows(ResponseStatusException.class, () -> service.validarAdmin("CLIENTE"));
+        assertThrows(ResponseStatusException.class, () -> service.validarAdmin(null));
+    }
+
+    @Test
+    public void cadaUnoVeSuPropiaCuentaYElAdminCualquiera() {
+        assertDoesNotThrow(() -> service.validarPropioOAdmin(5L, 5L, "CLIENTE"));
+        assertDoesNotThrow(() -> service.validarPropioOAdmin(9L, 1L, "ADMIN"));
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> service.validarPropioOAdmin(9L, 5L, "STAFF"));
+        assertEquals(HttpStatus.FORBIDDEN, e.getStatusCode());
+    }
+
+    @Test
+    public void elAdminNoPuedeQuitarseSuPropioRol() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> service.cambiarRol(1L, "STAFF", 1L));
+        assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
+    }
+
+    @Test
+    public void elAdminNoPuedeEliminarseASiMismo() {
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.eliminar(1L, 1L));
+        assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
     }
 }
