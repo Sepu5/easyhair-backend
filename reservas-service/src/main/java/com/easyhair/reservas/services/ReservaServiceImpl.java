@@ -116,16 +116,22 @@ public class ReservaServiceImpl implements ReservaService {
         validarMotivoCancelacion(rol, motivo);
 
         reserva.setEstado("CANCELADA");
-        reserva.setCanceladaPor("STAFF".equals(rol) ? "STAFF" : "CLIENTE");
+        // si cancela el staff o la administradora, queda como cancelada por la peluquería
+        reserva.setCanceladaPor(esPeluqueria(rol) ? "STAFF" : "CLIENTE");
         if (motivo != null && !motivo.isBlank()) {
             reserva.setMotivoCancelacion(motivo.trim());
         }
         return reservaRepo.save(reserva);
     }
 
+    // STAFF y ADMIN actúan en nombre de la peluquería
+    public boolean esPeluqueria(String rol) {
+        return "STAFF".equals(rol) || "ADMIN".equals(rol);
+    }
+
     // si cancela la peluquería, el cliente tiene que saber por qué
     public void validarMotivoCancelacion(String rol, String motivo) {
-        if ("STAFF".equals(rol) && (motivo == null || motivo.isBlank())) {
+        if (esPeluqueria(rol) && (motivo == null || motivo.isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el motivo de la cancelación");
         }
     }
