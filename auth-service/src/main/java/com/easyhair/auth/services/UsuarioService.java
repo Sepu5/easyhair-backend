@@ -15,6 +15,8 @@ public interface UsuarioService {
 
     AuthResponse login(LoginRequest request);
 
+    AuthResponse renovarToken(String headerAuthorization);
+
     UsuarioResponse obtenerPorId(Long id);
 
     String asignarRol(String correo);

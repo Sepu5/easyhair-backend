@@ -50,6 +50,13 @@ public class AuthController {
         return usuarioService.login(request);
     }
 
+    // renueva el token antes de que venza (la ruta /api/auth/** es pública en el gateway,
+    // por eso el token se valida aquí mismo)
+    @PostMapping("/auth/refresh")
+    public AuthResponse renovar(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        return usuarioService.renovarToken(authorization);
+    }
+
     // ---------- perfil: cada uno el suyo (o el ADMIN cualquiera) ----------
 
     @GetMapping("/usuarios/{id}")

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.easyhair.auth.entities.Usuario;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -36,5 +37,10 @@ public class JwtService {
                 .expiration(new Date(ahora.getTime() + expiracion))
                 .signWith(clave)
                 .compact();
+    }
+
+    // revisa la firma y que no esté vencido; si algo falla lanza una excepción
+    public Claims leerToken(String token) {
+        return Jwts.parser().verifyWith(clave).build().parseSignedClaims(token).getPayload();
     }
 }

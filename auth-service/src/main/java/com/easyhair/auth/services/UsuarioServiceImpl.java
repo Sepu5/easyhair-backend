@@ -13,6 +13,8 @@ import com.easyhair.auth.dto.RegistroRequest;
 import com.easyhair.auth.dto.UsuarioResponse;
 import com.easyhair.auth.entities.Usuario;
 import com.easyhair.auth.repository.UsuarioRepository;
+
+import io.jsonwebtoken.Claims;
 import com.easyhair.auth.dto.ActualizarUsuarioRequest;
 import com.easyhair.auth.dto.CrearUsuarioRequest;
 
@@ -56,6 +58,29 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (!encoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos");
         }
+
+        return new AuthResponse(aResponse(usuario), jwtService.generarToken(usuario));
+    }
+
+    // Entrega un token nuevo a partir de uno que todavía es válido.
+    // Se vuelve a leer el usuario de la base: si cambió de rol o lo borraron, el token nuevo lo refleja
+    @Override
+    public AuthResponse renovarToken(String headerAuthorization) {
+        if (headerAuthorization == null || !headerAuthorization.startsWith("Bearer ")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión");
+        }
+
+        Claims datos;
+        try {
+            datos = jwtService.leerToken(headerAuthorization.substring(7));
+        } catch (Exception e) {
+            // firma falsa o token vencido: no se renueva, hay que iniciar sesión de nuevo
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión inválida o expirada, inicia sesión de nuevo");
+        }
+
+        Long id = ((Number) datos.get("id")).longValue();
+        Usuario usuario = usuarioRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "La cuenta ya no existe"));
 
         return new AuthResponse(aResponse(usuario), jwtService.generarToken(usuario));
     }

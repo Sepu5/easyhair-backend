@@ -148,4 +148,60 @@ public class AuthServiceTest {
         ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.eliminar(1L, 1L));
         assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
     }
+
+    // ---------- renovar el token ----------
+
+    @Test
+    public void leerTokenDevuelveLosDatosDelUsuario() {
+        JwtService jwtService = new JwtService(claveDePrueba, 3600000);
+        Usuario usuario = new Usuario();
+        usuario.setId(3L);
+        usuario.setCorreo("valeria@easyhair.cl");
+        usuario.setRol("STAFF");
+
+        Claims datos = jwtService.leerToken(jwtService.generarToken(usuario));
+
+        assertEquals("STAFF", datos.get("rol"));
+        assertEquals(3, ((Number) datos.get("id")).intValue());
+    }
+
+    @Test
+    public void sinTokenNoSePuedeRenovar() {
+        UsuarioServiceImpl conJwt = new UsuarioServiceImpl(null, new JwtService(claveDePrueba, 3600000));
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> conJwt.renovarToken(null));
+        assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
+        assertThrows(ResponseStatusException.class, () -> conJwt.renovarToken("Basic abc"));
+    }
+
+    @Test
+    public void unTokenVencidoNoSePuedeRenovar() {
+        // expiración negativa: el token nace vencido
+        JwtService jwtVencido = new JwtService(claveDePrueba, -1000);
+        Usuario usuario = new Usuario();
+        usuario.setId(3L);
+        usuario.setCorreo("valeria@easyhair.cl");
+        usuario.setRol("STAFF");
+        String token = jwtVencido.generarToken(usuario);
+
+        UsuarioServiceImpl conJwt = new UsuarioServiceImpl(null, new JwtService(claveDePrueba, 3600000));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> conJwt.renovarToken("Bearer " + token));
+        assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
+    }
+
+    @Test
+    public void unTokenFirmadoConOtraClaveNoSePuedeRenovar() {
+        JwtService otraClave = new JwtService("otra-clave-distinta-que-no-es-la-del-servidor-999", 3600000);
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setCorreo("falso@gmail.com");
+        usuario.setRol("ADMIN");
+        String tokenFalso = otraClave.generarToken(usuario);
+
+        UsuarioServiceImpl conJwt = new UsuarioServiceImpl(null, new JwtService(claveDePrueba, 3600000));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> conJwt.renovarToken("Bearer " + tokenFalso));
+        assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
+    }
 }
