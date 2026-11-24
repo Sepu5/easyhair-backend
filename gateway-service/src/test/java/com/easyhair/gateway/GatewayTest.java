@@ -1,9 +1,12 @@
 package com.easyhair.gateway;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 public class GatewayTest {
@@ -49,5 +52,19 @@ public class GatewayTest {
     public void inventarioYFinanzasNecesitanToken() {
         assertFalse(filtro.esPublica("/api/consumos", HttpMethod.POST));
         assertFalse(filtro.esPublica("/api/movimientos", HttpMethod.GET));
+    }
+
+    @Test
+    public void seBorranLosHeadersDeUsuarioQueMandaElCliente() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Usuario-Id", "1");
+        headers.add("X-Usuario-Rol", "ADMIN");
+        headers.add("Content-Type", "application/json");
+
+        JwtFiltro.quitarHeadersDeUsuario(headers);
+
+        assertNull(headers.getFirst("X-Usuario-Id"));
+        assertNull(headers.getFirst("X-Usuario-Rol"));
+        assertEquals("application/json", headers.getFirst("Content-Type"));
     }
 }

@@ -38,7 +38,11 @@ public class JwtFiltro implements GlobalFilter, Ordered {
         HttpMethod metodo = exchange.getRequest().getMethod();
 
         if (esPublica(ruta, metodo)) {
-            return chain.filter(exchange);
+            // en las rutas públicas nadie puede mandar estos headers a mano para hacerse pasar por otro
+            ServerHttpRequest limpia = exchange.getRequest().mutate()
+                    .headers(JwtFiltro::quitarHeadersDeUsuario)
+                    .build();
+            return chain.filter(exchange.mutate().request(limpia).build());
         }
 
         String header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
@@ -81,6 +85,12 @@ public class JwtFiltro implements GlobalFilter, Ordered {
         }
         boolean esCatalogo = ruta.startsWith("/api/servicios") || ruta.startsWith("/api/peluqueros");
         return esCatalogo && HttpMethod.GET.equals(metodo);
+    }
+
+    // los headers X-Usuario-* solo los pone este filtro, nunca el cliente
+    public static void quitarHeadersDeUsuario(HttpHeaders headers) {
+        headers.remove("X-Usuario-Id");
+        headers.remove("X-Usuario-Rol");
     }
 
     private Mono<Void> rechazar(ServerWebExchange exchange, String mensaje) {
