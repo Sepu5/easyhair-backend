@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -75,6 +76,19 @@ public class ReservaServiceTest {
     @Test
     public void staffNoPuedeCancelarSinMotivo() {
         assertThrows(ResponseStatusException.class, () -> service.validarMotivoCancelacion("STAFF", " "));
+    }
+
+    @Test
+    public void adminNoPuedeCancelarSinMotivo() {
+        assertThrows(ResponseStatusException.class, () -> service.validarMotivoCancelacion("ADMIN", ""));
+    }
+
+    @Test
+    public void staffYAdminSonLaPeluqueria() {
+        assertTrue(service.esPeluqueria("STAFF"));
+        assertTrue(service.esPeluqueria("ADMIN"));
+        assertFalse(service.esPeluqueria("CLIENTE"));
+        assertFalse(service.esPeluqueria(null));
     }
 
     @Test
